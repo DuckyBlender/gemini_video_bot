@@ -18,43 +18,35 @@ async def geminivid(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
         file_id = video.file_id
         size = video.file_size
-
         # Max 20MB
         if size > 20000000:
             await context.bot.send_message(chat_id=update.effective_chat.id, text=f"File size is too large ({round(size / 1000000, 2)}MB). Max 20MB.", reply_to_message_id=update.message.message_id)
             return
-
         # Show typing indicator
         await context.bot.send_chat_action(chat_id=update.effective_chat.id, action="typing")
-
         logging.info(f"File ID: {file_id}")
-
         # Get the file path
         file = await context.bot.get_file(file_id)
         file_path = file.file_path
-
         # Download the file
         response = requests.get(file_path)
         response.raise_for_status()  # Raise an error for bad status codes
         video_file_name = "video.mp4"
         with open(video_file_name, 'wb') as f:
             f.write(response.content)
-
         # Upload the video file to the File API
         logging.info(f"Uploading file...")
         video_file = genai.upload_file(path=video_file_name)
         logging.info(f"Completed upload: {video_file.uri}")
-
         # Wait for the video to be processed
         while video_file.state.name == "PROCESSING":
             logging.info('Waiting for video to be processed.')
             time.sleep(2)
             video_file = genai.get_file(video_file.name)
-
         if video_file.state.name == "FAILED":
             raise ValueError(video_file.state.name)
         logging.info(f'Video processing complete: {video_file.uri}')
-
+        
         # Make the LLM inference request
         logging.info("Making LLM inference request...")
         response = model.generate_content([text, video_file], safety_settings={
@@ -65,21 +57,24 @@ async def geminivid(update: Update, context: ContextTypes.DEFAULT_TYPE):
             },
             request_options={"timeout": 600}
         )
+        
+        # Check if response contains the necessary parts
+        if not response.parts:
+            feedback = response.prompt_feedback
+            raise ValueError(f"No candidates returned in response.parts! Feedback: {feedback}")
+        
         logging.info(response.text)
-
         # Send the response back to the user
         await context.bot.send_message(chat_id=update.effective_chat.id, text=response.text, reply_to_message_id=update.message.message_id)
-
         # Delete the uploaded file
         genai.delete_file(video_file.name)
         logging.info(f'Deleted file {video_file.uri}')
-
     except requests.RequestException as e:
         logging.error(f"Request error: {e}")
         await context.bot.send_message(chat_id=update.effective_chat.id, text="There was an error downloading the video file.", reply_to_message_id=update.message.message_id)
     except Exception as e:
         logging.error(f"Unexpected error: {e}")
-        await context.bot.send_message(chat_id=update.effective_chat.id, text="An unexpected error occurred.", reply_to_message_id=update.message.message_id)
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=f"An unexpected error occurred: {e}", reply_to_message_id=update.message.message_id)
 
 if __name__ == '__main__':
     logging.basicConfig(
