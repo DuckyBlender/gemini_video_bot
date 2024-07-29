@@ -59,12 +59,12 @@ async def geminivid(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             request_options={"timeout": 600}
         )
 
-        # Check if the response is blocked
-        if response.result.prompt_feedback.block_reason:
-            logging.warn(f"Response blocked by Google: {response.result.prompt_feedback.block_reason}")
-            await context.bot.send_message(chat_id=update.effective_chat.id, text="The response was blocked by Google:", reply_to_message_id=update.message.message_id)
-            return
+        # if response.result.prompt_feedback.block_reason:
+        #     logging.warn(f"Response blocked by Google: {response.result.prompt_feedback.block_reason}")
+        #     await context.bot.send_message(chat_id=update.effective_chat.id, text="The response was blocked by Google:", reply_to_message_id=update.message.message_id)
+        #     return
 
+        logging.info(response)
         # logging.info(f"Response: {response}")
         
         logging.info(response.text)
