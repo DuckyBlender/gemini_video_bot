@@ -77,7 +77,8 @@ async def geminivid(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         logging.error(f"Unexpected error: {e}")
         await context.bot.send_message(chat_id=update.effective_chat.id, text=f"An unexpected error occurred: {e}", reply_to_message_id=update.message.message_id)
 
-def main() -> None:
+
+if __name__ == "__main__":
     # Enable logging
     logging.basicConfig(
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
@@ -97,7 +98,3 @@ def main() -> None:
     bot.add_handler(start_handler)
 
     bot.run_polling()
-
-
-if __name__ == '__main__':
-    main()
