@@ -7,7 +7,8 @@ from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler
 import requests
 import time
 
-async def geminivid(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def geminivid(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Gemini 1.5 Flash for the replied video."""
     try:
         # Strip the command
         text = update.message.text.replace("/gvid", "").strip()
@@ -76,11 +77,14 @@ async def geminivid(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logging.error(f"Unexpected error: {e}")
         await context.bot.send_message(chat_id=update.effective_chat.id, text=f"An unexpected error occurred: {e}", reply_to_message_id=update.message.message_id)
 
-if __name__ == '__main__':
+def main() -> None:
+    # Enable logging
     logging.basicConfig(
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        level=logging.INFO
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
     )
+
+    # set higher logging level for httpx to avoid all GET and POST requests being logged
+    logging.getLogger("httpx").setLevel(logging.WARNING)
 
     load_dotenv()
 
@@ -93,3 +97,7 @@ if __name__ == '__main__':
     bot.add_handler(start_handler)
 
     bot.run_polling()
+
+
+if __name__ == '__main__':
+    main()
