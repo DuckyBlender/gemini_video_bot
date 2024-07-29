@@ -21,9 +21,9 @@ async def geminivid(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         # Max 20MB
         if size > 20000000:
-            await context.bot.send_message(chat_id=update.effective_chat.id, text=f"File size is too large ({size / 1000000}MB). Max 20MB.", reply_to_message_id=update.message.message_id)
+            await context.bot.send_message(chat_id=update.effective_chat.id, text=f"File size is too large ({round(size / 1000000, 2)}MB). Max 20MB.", reply_to_message_id=update.message.message_id)
             return
-        
+
         # Show typing indicator
         await context.bot.send_chat_action(chat_id=update.effective_chat.id, action="typing")
 
