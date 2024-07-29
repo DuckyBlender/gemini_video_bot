@@ -2,6 +2,9 @@
 
 This is a simple Telegram bot that processes video files and generates content using Google's Generative AI. The bot was coded in one hour and is my first Python Telegram bot. I chose Python only because of the available libraries that made the implementation straightforward.
 
+> [!NOTE]
+> Due to restrictions on the Gemini API, you must run the bot outside of the European Union (EU) as the free API is not available within the EU.
+
 ## Features
 
 - Responds to the `/gvid` command.
