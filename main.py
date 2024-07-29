@@ -31,7 +31,7 @@ async def geminivid(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         file_path = file.file_path
         # Download the file
         response = requests.get(file_path)
-        response.raise_for_status()  # Raise an error for bad status codes
+        response.raise_for_status()
         video_file_name = "video.mp4"
         with open(video_file_name, 'wb') as f:
             f.write(response.content)
@@ -58,11 +58,14 @@ async def geminivid(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             },
             request_options={"timeout": 600}
         )
-        
-        # Check if response contains the necessary parts
-        if not response.parts:
-            feedback = response.prompt_feedback
-            raise ValueError(f"No candidates returned in response.parts! Feedback: {feedback}")
+
+        # Check if the response is blocked
+        if response.result.prompt_feedback.block_reason:
+            logging.info(f"Response blocked by Google: {response.result.prompt_feedback.block_reason}")
+            await context.bot.send_message(chat_id=update.effective_chat.id, text="The response was blocked by Google:", reply_to_message_id=update.message.message_id)
+            return
+
+        # logging.info(f"Response: {response}")
         
         logging.info(response.text)
         # Send the response back to the user
@@ -83,10 +86,10 @@ if __name__ == "__main__":
     logging.basicConfig(
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
     )
-
     # set higher logging level for httpx to avoid all GET and POST requests being logged
     logging.getLogger("httpx").setLevel(logging.WARNING)
 
+    logger = logging.getLogger(__name__)
     load_dotenv()
 
     genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
